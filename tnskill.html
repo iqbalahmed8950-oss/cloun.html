@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+        .dashboard-container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex: 1; min-width: 300px; }
+        .metric { font-size: 24px; font-weight: bold; color: #333; }
+        .label { color: #666; font-size: 14px; }
+        .btn-reset {
+            background: #e74c3c; color: white; border: none;
+            padding: 10px 20px; border-radius: 5px; cursor: pointer;
+            font-size: 14px; font-weight: bold; transition: background 0.2s;
+        }
+        .btn-reset:hover { background: #c0392b; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Live Product Usage Dashboard</h1>
+        <button class="btn-reset" onclick="resetDashboard()">⟳ Reset</button>
+    </div>
+
+    <div class="dashboard-container" style="margin-top: 20px;">
+        <div class="card">
+            <div class="label">Total Users</div>
+            <div class="metric" id="total-users">Loading...</div>
+        </div>
+        <div class="card">
+            <div class="label">Active Users</div>
+            <div class="metric" id="active-users">Loading...</div>
+        </div>
+        <div class="card">
+            <div class="label">Revenue</div>
+            <div class="metric" id="revenue">$0</div>
+        </div>
+    </div>
+
+    <div class="dashboard-container" style="margin-top: 20px;">
+        <div class="card" style="flex: 2;">
+            <h3>Revenue Over Time</h3>
+            <div id="revenueChart" style="width:100%; height:400px;"></div>
+        </div>
+        <div class="card" style="flex: 1;">
+            <h3>Product Distribution</h3>
+            <div id="productsChart" style="width:100%; height:400px;"></div>
+        </div>
+    </div>
+
+    <script>
+        let intervalId = null;
+
+        function fetchData() {
+            const data = {
+                users: 1500,
+                activeUsers: 1000,
+                revenue: 50000,
+                revenueHistory: {x: ['Jan', 'Feb', 'Mar'], y: [10000, 15000, 50000]},
+                products: {x: ['Product A', 'Product B', 'Product C'], y: [150, 200, 100]}
+            };
+
+            document.getElementById('total-users').innerText = data.users;
+            document.getElementById('active-users').innerText = data.activeUsers;
+            document.getElementById('revenue').innerText = '$' + data.revenue.toLocaleString();
+
+            Plotly.newPlot('revenueChart', [{
+                x: data.revenueHistory.x,
+                y: data.revenueHistory.y,
+                type: 'scatter',
+                mode: 'lines+markers'
+            }], {title: 'Revenue Over Time'});
+
+            Plotly.newPlot('productsChart', [{
+                x: data.products.x,
+                y: data.products.y,
+                type: 'bar'
+            }], {title: 'Product Sales'});
+        }
+
+        function resetDashboard() {
+            // Stop the live interval
+            if (intervalId) clearInterval(intervalId);
+
+            // Reset metrics
+            document.getElementById('total-users').innerText = '0';
+            document.getElementById('active-users').innerText = '0';
+            document.getElementById('revenue').innerText = '$0';
+
+            // Clear charts
+            Plotly.purge('revenueChart');
+            Plotly.purge('productsChart');
+
+            // Restart live updates
+            fetchData();
+            intervalId = setInterval(fetchData, 5000);
+        }
+
+        // Initial load
+        fetchData();
+        intervalId = setInterval(fetchData, 5000);
+    </script>
+</body>
+</html>
